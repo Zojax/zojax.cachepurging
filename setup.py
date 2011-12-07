@@ -28,7 +28,7 @@ setup(name = 'zojax.cachepurging',
       version = version,
       author = 'Anatoly Bubenkov',
       author_email = 'bubenkoff@gmail.com',
-      description = "Cache purging for zojax caching",
+      description = "Cache purging for zojax caching. Credits to plone.cachepurging",
       long_description = (
         'Detailed Documentation\n' +
         '======================\n'
@@ -54,7 +54,7 @@ setup(name = 'zojax.cachepurging',
                           'zope.schema',
                           'zope.component',
                           'zope.interface',
-                          'zope.app.cache',
+                          'zope.globalrequest',
                           'zojax.cache',
                           ],
       extras_require = dict(test=['zojax.autoinclude',

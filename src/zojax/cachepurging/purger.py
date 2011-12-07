@@ -21,12 +21,11 @@ import threading
 import time
 import urlparse
 
-from App.config import getConfiguration
 from zope.interface import implements
 
-from plone.cachepurging.interfaces import IPurger
+from zojax.cachepurging.interfaces import IPurger
 
-logger = logging.getLogger('plone.cachepurging')
+logger = logging.getLogger('zojax.cachepurging')
 
 
 class Connection(httplib.HTTPConnection):
@@ -87,8 +86,7 @@ class DefaultPurger(object):
             # Make a loud noise. Ideally the queue size would be
             # user-configurable - but the more likely case is that the purge
             # host is down.
-            if not getConfiguration().debug_mode:
-                logger.warning("The purge queue for the URL %s is full - the "
+            logger.debug("The purge queue for the URL %s is full - the "
                                "request will be discarded.  Please check the "
                                "server is reachable, or disable this purge "
                                "host", url)
@@ -309,7 +307,7 @@ class Worker(threading.Thread):
         while not self.stopping:
             try:
                 return self.producer.getConnection(url)
-            except socket.error as e:
+            except socket.error, e:
                 wait_time = int(min(wait_time * 2, 21))
                 if wait_time > 20:
                     # we waited a full minute, we assume a permanent failure

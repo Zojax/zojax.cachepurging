@@ -1,9 +1,10 @@
 from zope.interface import implements
 from zope.component import adapts
+from zope.traversing.browser.absoluteurl import absoluteURL
+from zope.globalrequest import getRequest
+from zojax.cache.interfaces import IPurgePaths
 
-from z3c.caching.interfaces import IPurgePaths
-
-from OFS.interfaces import ITraversable
+from zope.traversing.interfaces import ITraversable
 
 class TraversablePurgePaths(object):
     """Default purge for OFS.Traversable-style objects
@@ -16,7 +17,7 @@ class TraversablePurgePaths(object):
         self.context = context
         
     def getRelativePaths(self):
-        return [self.context.absolute_url_path()]
+        return [absoluteURL(self.context, getRequest())]
     
     def getAbsolutePaths(self):
         return []

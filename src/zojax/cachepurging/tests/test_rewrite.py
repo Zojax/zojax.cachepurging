@@ -9,8 +9,8 @@ from plone.registry import Registry
 
 from plone.registry.fieldfactory import persistentFieldAdapter
 
-from plone.cachepurging.interfaces import ICachePurgingSettings
-from plone.cachepurging.rewrite import DefaultRewriter
+from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.rewrite import DefaultRewriter
 
 class FauxRequest(dict):
     pass

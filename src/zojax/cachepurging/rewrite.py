@@ -5,8 +5,8 @@ from zope.component import adapts, queryUtility
 
 from plone.registry.interfaces import IRegistry
 
-from plone.cachepurging.interfaces import IPurgePathRewriter
-from plone.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import IPurgePathRewriter
+from zojax.cachepurging.interfaces import ICachePurgingSettings
 
 class DefaultRewriter(object):
     """Default rewriter, which is aware of virtual hosting

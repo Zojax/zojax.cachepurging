@@ -17,18 +17,18 @@ from zope.annotation.interfaces import IAttributeAnnotatable
 
 from zope.globalrequest import setRequest
 
-from z3c.caching.interfaces import IPurgePaths
-from z3c.caching.purge import Purge
+from zojax.cache.interfaces import IPurgePaths
+from zojax.cache.purge import Purge
 
 from plone.registry.interfaces import IRegistry
 from plone.registry import Registry
 
 from plone.registry.fieldfactory import persistentFieldAdapter
 
-from plone.cachepurging.interfaces import IPurger
-from plone.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import IPurger
+from zojax.cachepurging.interfaces import ICachePurgingSettings
 
-from plone.cachepurging.hooks import queuePurge, purge
+from zojax.cachepurging.hooks import queuePurge, purge
 
 from ZPublisher.pubevents import PubSuccess
 
@@ -192,7 +192,7 @@ class TestQueueHandler(unittest.TestCase):
         
         notify(Purge(context))
         
-        self.assertEquals({'plone.cachepurging.urls': set()},
+        self.assertEquals({'zojax.cachepurging.urls': set()},
                           dict(IAnnotations(request)))
 
     def test_enabled(self):
@@ -227,7 +227,7 @@ class TestQueueHandler(unittest.TestCase):
         
         notify(Purge(context))
         
-        self.assertEquals({'plone.cachepurging.urls': set(['/foo', '/bar'])},
+        self.assertEquals({'zojax.cachepurging.urls': set(['/foo', '/bar'])},
                           dict(IAnnotations(request)))
 
 class TestPurgeHandler(unittest.TestCase):
@@ -299,7 +299,7 @@ class TestPurgeHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         
-        IAnnotations(request)['plone.cachepurging.urls'] = set()
+        IAnnotations(request)['zojax.cachepurging.urls'] = set()
         
         registry = Registry()
         registry.registerInterface(ICachePurgingSettings)
@@ -329,7 +329,7 @@ class TestPurgeHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         
-        IAnnotations(request)['plone.cachepurging.urls'] = set(['/foo', '/bar'])
+        IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
         
         class FauxPurger(object):
             implements(IPurger)
@@ -351,7 +351,7 @@ class TestPurgeHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         
-        IAnnotations(request)['plone.cachepurging.urls'] = set(['/foo', '/bar'])
+        IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
         
         registry = Registry()
         registry.registerInterface(ICachePurgingSettings)
@@ -381,7 +381,7 @@ class TestPurgeHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         
-        IAnnotations(request)['plone.cachepurging.urls'] = set(['/foo', '/bar'])
+        IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
         
         registry = Registry()
         registry.registerInterface(ICachePurgingSettings)
@@ -400,7 +400,7 @@ class TestPurgeHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         
-        IAnnotations(request)['plone.cachepurging.urls'] = set(['/foo', '/bar'])
+        IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
         
         registry = Registry()
         registry.registerInterface(ICachePurgingSettings)

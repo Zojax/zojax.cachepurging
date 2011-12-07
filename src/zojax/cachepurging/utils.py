@@ -1,12 +1,12 @@
 from zope.component import queryUtility
 from zope.component import getAdapters
 
-from z3c.caching.interfaces import IPurgePaths
+from zojax.cache.interfaces import IPurgePaths
 
 from plone.registry.interfaces import IRegistry
 
-from plone.cachepurging.interfaces import ICachePurgingSettings
-from plone.cachepurging.interfaces import IPurgePathRewriter
+from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import IPurgePathRewriter
 
 def isCachePurgingEnabled(registry=None):
     """Return True if caching is enabled

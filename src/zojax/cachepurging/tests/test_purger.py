@@ -9,7 +9,7 @@ import time
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-from plone.cachepurging.purger import DefaultPurger
+from zojax.cachepurging.purger import DefaultPurger
 
 # Define a test HTTP server that returns canned responses
 

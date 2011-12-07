@@ -5,14 +5,14 @@ from zope.event import notify
 
 from plone.registry.interfaces import IRegistry
 
-from plone.cachepurging.interfaces import IPurger
-from plone.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import IPurger
+from zojax.cachepurging.interfaces import ICachePurgingSettings
 
-from z3c.caching.purge import Purge
+from zojax.cache.purge import Purge
 
-from plone.cachepurging.utils import getPathsToPurge
-from plone.cachepurging.utils import getURLsToPurge
-from plone.cachepurging.utils import isCachePurgingEnabled
+from zojax.cachepurging.utils import getPathsToPurge
+from zojax.cachepurging.utils import getURLsToPurge
+from zojax.cachepurging.utils import isCachePurgingEnabled
 
 class QueuePurge(object):
     """Manually initiate a purge
