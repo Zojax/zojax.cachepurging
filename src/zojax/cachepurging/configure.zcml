@@ -1,11 +1,16 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
+    xmlns:zojax="http://namespaces.zope.org/zojax"
     xmlns:browser="http://namespaces.zope.org/browser"
-    i18n_domain="plone.cachepurging">
+    i18n_domain="zojax.cachepurging">
 
-    <include package="zope.annotation" />
-    <include package="five.globalrequest" />
-    <include package="plone.registry" />
+    <zojax:configlet
+       title="Cache puging"
+       name="system.cache.purging"
+       schema=".interfaces.ICachePurgingConfiglet"
+       description="Cache purging configuration."
+       permission="zojax.Configure">
+    </zojax:configlet>
 
     <!-- Default rewriter and purge urls -->
     <adapter factory=".rewrite.DefaultRewriter" />
@@ -25,22 +30,22 @@
 
     <!-- Views to explicitly purge the context -->
     <permission
-        id="plone.cachepurging.InitiatePurge"
+        id="zojax.cachepurging.InitiatePurge"
         title="plone.cachepurging: Manually purge objects"
         />
 
     <browser:view
         for="*"
-        name="plone.cachepurging.purge"
+        name="zojax.cachepurging.purge"
         class=".browser.PurgeImmediately"
-        permission="plone.cachepurging.InitiatePurge"
+        permission="zojax.cachepurging.InitiatePurge"
         />
 
     <browser:view
         for="*"
-        name="plone.cachepurging.queue"
+        name="zojax.cachepurging.queue"
         class=".browser.QueuePurge"
-        permission="plone.cachepurging.InitiatePurge"
+        permission="zojax.cachepurging.InitiatePurge"
         />
 
 </configure>

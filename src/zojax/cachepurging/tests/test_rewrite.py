@@ -1,15 +1,10 @@
 import unittest
 import zope.component.testing
 
-from zope.component import provideUtility
+from zope.component import provideUtility, getUtility
 from zope.component import provideAdapter
 
-from plone.registry.interfaces import IRegistry
-from plone.registry import Registry
-
-from plone.registry.fieldfactory import persistentFieldAdapter
-
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 from zojax.cachepurging.rewrite import DefaultRewriter
 
 class FauxRequest(dict):
@@ -20,7 +15,7 @@ class TestRewrite(unittest.TestCase):
     def setUp(self):
         self.request = FauxRequest()
         self.rewriter = DefaultRewriter(self.request)
-        provideAdapter(persistentFieldAdapter)
+
         
     def tearDown(self):
         zope.component.testing.tearDown()
@@ -54,8 +49,8 @@ class TestRewrite(unittest.TestCase):
     def test_virtual_hosting_disabled(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = False
         
         self._prepareVHMRequest('/foo')
@@ -64,8 +59,8 @@ class TestRewrite(unittest.TestCase):
     def test_empty_request(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self.request.clear()
@@ -74,8 +69,8 @@ class TestRewrite(unittest.TestCase):
     def test_no_virtual_url(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo')
@@ -85,8 +80,8 @@ class TestRewrite(unittest.TestCase):
     def test_no_virtual_url_parts(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo')
@@ -96,8 +91,8 @@ class TestRewrite(unittest.TestCase):
     def test_no_virtual_root_physical_path(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo')
@@ -107,8 +102,8 @@ class TestRewrite(unittest.TestCase):
     def test_malformed_virtual_url_parts(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo')
@@ -128,8 +123,8 @@ class TestRewrite(unittest.TestCase):
     def test_standard_vhm(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo')
@@ -139,8 +134,8 @@ class TestRewrite(unittest.TestCase):
     def test_virtual_root_is_app_root(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo', root='/')
@@ -151,8 +146,8 @@ class TestRewrite(unittest.TestCase):
     def test_virtual_root_is_deep(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo', root='/bar/plone')
@@ -163,8 +158,8 @@ class TestRewrite(unittest.TestCase):
     def test_inside_out_hosting(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo', root='/bar/plone', prefix='/foo/bar')
@@ -175,8 +170,8 @@ class TestRewrite(unittest.TestCase):
     def test_virtual_path_is_root(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/', root='/plone')
@@ -187,8 +182,8 @@ class TestRewrite(unittest.TestCase):
     def test_virtual_path_is_empty(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('', root='/plone')
@@ -199,8 +194,8 @@ class TestRewrite(unittest.TestCase):
     def test_virtual_path_is_deep(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo/bar', root='/plone')
@@ -211,8 +206,8 @@ class TestRewrite(unittest.TestCase):
     def test_nonstandard_port(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo', domain='example.com:81')
@@ -222,8 +217,8 @@ class TestRewrite(unittest.TestCase):
     def test_https(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         
         self._prepareVHMRequest('/foo', domain='example.com:81', protocol='https')
@@ -233,8 +228,8 @@ class TestRewrite(unittest.TestCase):
     def test_domains(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         settings.domains = ('http://example.org:81', 'https://example.com:82')
         
@@ -246,8 +241,8 @@ class TestRewrite(unittest.TestCase):
     def test_domains_w_different_path_in_request(self):
         registry = Registry()
         provideUtility(registry, IRegistry)
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.virtualHosting = True
         settings.domains = ('http://example.org:81', 'https://example.com:82')
         

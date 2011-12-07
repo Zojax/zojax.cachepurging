@@ -3,10 +3,9 @@ from StringIO import StringIO
 from zope.component import getUtility
 from zope.event import notify
 
-from plone.registry.interfaces import IRegistry
 
 from zojax.cachepurging.interfaces import IPurger
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 
 from zojax.cache.purge import Purge
 
@@ -43,8 +42,7 @@ class PurgeImmediately(object):
         if not isCachePurgingEnabled():
             return 'Caching not enabled'
         
-        registry = getUtility(IRegistry)
-        settings = registry.forInterface(ICachePurgingSettings)
+        settings = getUtility(ICachePurgingConfiglet)
         
         purger = getUtility(IPurger)
         

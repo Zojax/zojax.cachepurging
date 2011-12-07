@@ -5,10 +5,8 @@ from zope.i18nmessageid import MessageFactory
 
 _ = MessageFactory('zojax.cachepurging')
     
-class ICachePurgingSettings(Interface):
+class ICachePurgingConfiglet(Interface):
     """Settings used by the purging algorithm.
-    
-    Should be installed into ``plone.registry``.
     """
     
     enabled = schema.Bool(

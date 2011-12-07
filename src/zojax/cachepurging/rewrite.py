@@ -3,10 +3,9 @@ import urlparse
 from zope.interface import Interface, implements
 from zope.component import adapts, queryUtility
 
-from plone.registry.interfaces import IRegistry
 
 from zojax.cachepurging.interfaces import IPurgePathRewriter
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 
 class DefaultRewriter(object):
     """Default rewriter, which is aware of virtual hosting
@@ -30,7 +29,7 @@ class DefaultRewriter(object):
         if registry is None:
             return [path]
         
-        settings = registry.forInterface(ICachePurgingSettings, check=False)
+        settings = registry.forInterface(ICachePurgingConfiglet, check=False)
         
         virtualHosting = settings.virtualHosting
         

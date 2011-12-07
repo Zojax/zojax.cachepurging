@@ -8,12 +8,7 @@ from zope.component import adapts
 
 from zojax.cache.interfaces import IPurgePaths
 
-from plone.registry.interfaces import IRegistry
-from plone.registry import Registry
-
-from plone.registry.fieldfactory import persistentFieldAdapter
-
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 from zojax.cachepurging.interfaces import IPurgePathRewriter
 
 from zojax.cachepurging import utils
@@ -27,7 +22,7 @@ class FauxRequest(dict):
 class TestIsCachingEnabled(unittest.TestCase):
     
     def setUp(self):
-        provideAdapter(persistentFieldAdapter)
+        pass
         
     def tearDown(self):
         zope.component.testing.tearDown()
@@ -37,16 +32,16 @@ class TestIsCachingEnabled(unittest.TestCase):
 
     def test_no_settings(self):
         registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
         provideUtility(registry, IRegistry)
         self.assertEquals(False, utils.isCachePurgingEnabled())
 
     def test_disabled(self):
         registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
         provideUtility(registry, IRegistry)
         
-        settings = registry.forInterface(ICachePurgingSettings)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.enabled = False
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -54,10 +49,10 @@ class TestIsCachingEnabled(unittest.TestCase):
         
     def test_no_proxies(self):
         registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
         provideUtility(registry, IRegistry)
         
-        settings = registry.forInterface(ICachePurgingSettings)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.enabled = False
         
         settings.cachingProxies = None
@@ -68,18 +63,18 @@ class TestIsCachingEnabled(unittest.TestCase):
     
     def test_enabled(self):
         registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
         provideUtility(registry, IRegistry)
         
-        settings = registry.forInterface(ICachePurgingSettings)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         self.assertEquals(True, utils.isCachePurgingEnabled())
     
     def test_passed_registry(self):
         registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        settings = registry.forInterface(ICachePurgingSettings)
+        registry.registerInterface(ICachePurgingConfiglet)
+        settings = registry.forInterface(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         

@@ -1,13 +1,15 @@
 import unittest
+from zope.app.publication.interfaces import EndRequestEvent
 import zope.component.testing
 
 from zope.interface import implements
 from zope.interface import alsoProvides
 
 from zope.component import adapts
-from zope.component import provideUtility
+from zope.component import provideUtility, getUtility
 from zope.component import provideAdapter
 from zope.component import provideHandler
+from zope.app.publication.interfaces import EndRequestEvent
 
 from zope.event import notify
 
@@ -20,17 +22,11 @@ from zope.globalrequest import setRequest
 from zojax.cache.interfaces import IPurgePaths
 from zojax.cache.purge import Purge
 
-from plone.registry.interfaces import IRegistry
-from plone.registry import Registry
-
-from plone.registry.fieldfactory import persistentFieldAdapter
-
-from zojax.cachepurging.interfaces import IPurger
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import IPurger, ICachePurgingConfiglet
+from zojax.cachepurging.configlet import CachePurgingConfiglet
 
 from zojax.cachepurging.hooks import queuePurge, purge
 
-from ZPublisher.pubevents import PubSuccess
 
 class FauxContext(dict):
     pass
@@ -42,7 +38,7 @@ class TestQueueHandler(unittest.TestCase):
     
     def setUp(self):
         provideAdapter(AttributeAnnotations)
-        provideAdapter(persistentFieldAdapter)
+
         provideHandler(queuePurge)
         
     def tearDown(self):
@@ -52,11 +48,10 @@ class TestQueueHandler(unittest.TestCase):
     def test_no_request(self):
         context = FauxContext()
         
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
         
-        settings = registry.forInterface(ICachePurgingSettings)
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -85,12 +80,11 @@ class TestQueueHandler(unittest.TestCase):
         
         request = FauxRequest()
         setRequest(request)
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -114,45 +108,18 @@ class TestQueueHandler(unittest.TestCase):
         except:
             self.fail()
         
-
-    def test_no_registry(self):
-        context = FauxContext()
-        
-        request = FauxRequest()
-        alsoProvides(request, IAttributeAnnotatable)
-        setRequest(request)
-        
-        class FauxPurgePaths(object):
-            implements(IPurgePaths)
-            adapts(FauxContext)
-        
-            def __init__(self, context):
-                self.context = context
-        
-            def getRelativePaths(self):
-                return ['/foo', '/bar']
-        
-            def getAbsolutePaths(self):
-                return []
-        
-        provideAdapter(FauxPurgePaths, name="test1")
-        
-        notify(Purge(context))
-        
-        self.assertEquals({}, dict(IAnnotations(request)))
-    
     def test_caching_disabled(self):
         context = FauxContext()
         
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         setRequest(request)
+
+        configlet= CachePurgingConfiglet()
         
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = False
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -181,12 +148,11 @@ class TestQueueHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         setRequest(request)
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -201,12 +167,11 @@ class TestQueueHandler(unittest.TestCase):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
         setRequest(request)
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -234,7 +199,7 @@ class TestPurgeHandler(unittest.TestCase):
     
     def setUp(self):
         provideAdapter(AttributeAnnotations)
-        provideAdapter(persistentFieldAdapter)
+
         provideHandler(purge)
         
     def tearDown(self):
@@ -242,12 +207,11 @@ class TestPurgeHandler(unittest.TestCase):
     
     def test_request_not_annotatable(self):
         request = FauxRequest()
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -263,19 +227,18 @@ class TestPurgeHandler(unittest.TestCase):
         purger = FauxPurger()
         provideUtility(purger)
         
-        notify(PubSuccess(request))
+        notify(EndRequestEvent(None, request))
         
         self.assertEquals([], purger.purged)
     
     def test_no_path_key(self):
         request = FauxRequest()
         alsoProvides(request, IAttributeAnnotatable)
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -291,7 +254,7 @@ class TestPurgeHandler(unittest.TestCase):
         purger = FauxPurger()
         provideUtility(purger)
         
-        notify(PubSuccess(request))
+        notify(EndRequestEvent(None,request))
         
         self.assertEquals([], purger.purged)
 
@@ -300,12 +263,11 @@ class TestPurgeHandler(unittest.TestCase):
         alsoProvides(request, IAttributeAnnotatable)
         
         IAnnotations(request)['zojax.cachepurging.urls'] = set()
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -321,29 +283,7 @@ class TestPurgeHandler(unittest.TestCase):
         purger = FauxPurger()
         provideUtility(purger)
         
-        notify(PubSuccess(request))
-        
-        self.assertEquals([], purger.purged)
-    
-    def test_no_registry(self):
-        request = FauxRequest()
-        alsoProvides(request, IAttributeAnnotatable)
-        
-        IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
-        
-        class FauxPurger(object):
-            implements(IPurger)
-            
-            def __init__(self):
-                self.purged = []
-            
-            def purgeAsync(self, url, httpVerb='PURGE'):
-                self.purged.append(url)
-        
-        purger = FauxPurger()
-        provideUtility(purger)
-        
-        notify(PubSuccess(request))
+        notify(EndRequestEvent(None, request))
         
         self.assertEquals([], purger.purged)
     
@@ -352,12 +292,11 @@ class TestPurgeHandler(unittest.TestCase):
         alsoProvides(request, IAttributeAnnotatable)
         
         IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = False
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -373,7 +312,7 @@ class TestPurgeHandler(unittest.TestCase):
         purger = FauxPurger()
         provideUtility(purger)
         
-        notify(PubSuccess(request))
+        notify(EndRequestEvent(None, request))
         
         self.assertEquals([], purger.purged)
     
@@ -382,17 +321,16 @@ class TestPurgeHandler(unittest.TestCase):
         alsoProvides(request, IAttributeAnnotatable)
         
         IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
         try:
-            notify(PubSuccess(request))
+            notify(EndRequestEvent(None, request))
         except:
             self.fail()
     
@@ -401,12 +339,11 @@ class TestPurgeHandler(unittest.TestCase):
         alsoProvides(request, IAttributeAnnotatable)
         
         IAnnotations(request)['zojax.cachepurging.urls'] = set(['/foo', '/bar'])
-        
-        registry = Registry()
-        registry.registerInterface(ICachePurgingSettings)
-        provideUtility(registry, IRegistry)
-        
-        settings = registry.forInterface(ICachePurgingSettings)
+
+        configlet= CachePurgingConfiglet()
+        provideUtility(configlet, ICachePurgingConfiglet)
+
+        settings = getUtility(ICachePurgingConfiglet)
         settings.enabled = True
         settings.cachingProxies = ('http://localhost:1234',)
         
@@ -422,7 +359,7 @@ class TestPurgeHandler(unittest.TestCase):
         purger = FauxPurger()
         provideUtility(purger)
         
-        notify(PubSuccess(request))
+        notify(EndRequestEvent(None, request))
         
         self.assertEquals(['http://localhost:1234/foo', 'http://localhost:1234/bar'],
                           purger.purged)

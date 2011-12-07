@@ -1,9 +1,9 @@
 import unittest
 
 from zope.interface import implements
+from zope.traversing.interfaces import ITraversable
 
 from zojax.cachepurging.paths import TraversablePurgePaths
-from OFS.interfaces import ITraversable
 
 class FauxTraversable(object):
     implements(ITraversable)

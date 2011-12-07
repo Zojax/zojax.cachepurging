@@ -1,23 +1,16 @@
-from zope.component import queryUtility
+from zope.component import queryUtility, getUtility
 from zope.component import getAdapters
 
 from zojax.cache.interfaces import IPurgePaths
 
-from plone.registry.interfaces import IRegistry
 
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 from zojax.cachepurging.interfaces import IPurgePathRewriter
 
-def isCachePurgingEnabled(registry=None):
+def isCachePurgingEnabled():
     """Return True if caching is enabled
     """
-    
-    if registry is None:
-        registry = queryUtility(IRegistry)
-    if registry is None:
-        return False
-    
-    settings = registry.forInterface(ICachePurgingSettings, check=False)
+    settings = getUtility(ICachePurgingConfiglet)
     return (settings.enabled and bool(settings.cachingProxies))
 
 def getPathsToPurge(context, request):

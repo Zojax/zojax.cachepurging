@@ -1,20 +1,18 @@
-from zope.component import adapter, queryUtility
+from zope.app.publication.interfaces import IEndRequestEvent
+from zope.component import adapter, queryUtility, getUtility
 from zope.annotation.interfaces import IAnnotations
 
 from zope.globalrequest import getRequest
 
 from zojax.cache.interfaces import IPurgeEvent
 
-from plone.registry.interfaces import IRegistry
 
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 from zojax.cachepurging.interfaces import IPurger
 
 from zojax.cachepurging.utils import getPathsToPurge
 from zojax.cachepurging.utils import isCachePurgingEnabled
 from zojax.cachepurging.utils import getURLsToPurge
-
-from ZPublisher.interfaces import IPubSuccess
 
 KEY = "zojax.cachepurging.urls"
 
@@ -37,7 +35,7 @@ def queuePurge(event):
     paths = annotations.setdefault(KEY, set())
     paths.update(getPathsToPurge(event.object, request))
 
-@adapter(IPubSuccess)
+@adapter(IEndRequestEvent)
 def purge(event):
     """Asynchronously send PURGE requests
     """
@@ -52,18 +50,14 @@ def purge(event):
     if paths is None:
         return
     
-    registry = queryUtility(IRegistry)
-    if registry is None:
-        return
-    
-    if not isCachePurgingEnabled(registry=registry):
+    if not isCachePurgingEnabled():
         return
     
     purger = queryUtility(IPurger)
     if purger is None:
         return
     
-    settings = registry.forInterface(ICachePurgingSettings, check=False)
+    settings = getUtility(ICachePurgingConfiglet)
     for path in paths:
         for url in getURLsToPurge(path, settings.cachingProxies):
             purger.purgeAsync(url)

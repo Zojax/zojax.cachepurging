@@ -11,13 +11,8 @@ from zope.component import provideHandler
 from zojax.cache.interfaces import IPurgePaths
 from zojax.cache.interfaces import IPurgeEvent
 
-from plone.registry.interfaces import IRegistry
-from plone.registry import Registry
-
-from plone.registry.fieldfactory import persistentFieldAdapter
-
 from zojax.cachepurging.interfaces import IPurger
-from zojax.cachepurging.interfaces import ICachePurgingSettings
+from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 
 from zojax.cachepurging.browser import QueuePurge, PurgeImmediately
 
@@ -39,12 +34,12 @@ class Handler(object):
 class TestQueuePurge(unittest.TestCase):
     
     def setUp(self):
-        provideAdapter(persistentFieldAdapter)
+
         self.registry = Registry()
-        self.registry.registerInterface(ICachePurgingSettings)
+        self.registry.registerInterface(ICachePurgingConfiglet)
         provideUtility(self.registry, IRegistry)
         
-        self.settings = self.registry.forInterface(ICachePurgingSettings)
+        self.settings = self.registry.forInterface(ICachePurgingConfiglet)
         self.settings.enabled = True
         self.settings.cachingProxies = ('http://localhost:1234',)
         
@@ -73,12 +68,12 @@ class TestQueuePurge(unittest.TestCase):
 class TestPurgeImmediately(unittest.TestCase):
     
     def setUp(self):
-        provideAdapter(persistentFieldAdapter)
+
         self.registry = Registry()
-        self.registry.registerInterface(ICachePurgingSettings)
+        self.registry.registerInterface(ICachePurgingConfiglet)
         provideUtility(self.registry, IRegistry)
         
-        self.settings = self.registry.forInterface(ICachePurgingSettings)
+        self.settings = self.registry.forInterface(ICachePurgingConfiglet)
         self.settings.enabled = True
         self.settings.cachingProxies = ('http://localhost:1234',)
         
