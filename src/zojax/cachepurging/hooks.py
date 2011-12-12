@@ -1,6 +1,8 @@
+from zope.app.component.hooks import setSite
 from zope.app.publication.interfaces import IEndRequestEvent
 from zope.component import adapter, queryUtility, getUtility
 from zope.annotation.interfaces import IAnnotations
+from zope.component.interfaces import IComponentLookup
 
 from zope.globalrequest import getRequest
 
@@ -20,7 +22,6 @@ KEY = "zojax.cachepurging.urls"
 def queuePurge(event):
     """Find URLs to purge and queue them for later
     """
-    
     request = getRequest()
     if request is None:
         return
@@ -31,7 +32,6 @@ def queuePurge(event):
     
     if not isCachePurgingEnabled():
         return
-    
     paths = annotations.setdefault(KEY, set())
     paths.update(getPathsToPurge(event.object, request))
 
@@ -39,25 +39,29 @@ def queuePurge(event):
 def purge(event):
     """Asynchronously send PURGE requests
     """
-    
     request = event.request
-    
+    context = event.object
+
     annotations = IAnnotations(request, None)
     if annotations is None:
         return
     
     paths = annotations.get(KEY, None)
-    if paths is None:
+    if paths is None or not paths:
         return
-    
-    if not isCachePurgingEnabled():
+
+    setSite(getattr(IComponentLookup(context, None), '__parent__'))
+
+    if not isCachePurgingEnabled(context):
         return
-    
-    purger = queryUtility(IPurger)
+
+    purger = queryUtility(IPurger, context=context)
     if purger is None:
         return
     
-    settings = getUtility(ICachePurgingConfiglet)
+    settings = getUtility(ICachePurgingConfiglet, context=context)
     for path in paths:
         for url in getURLsToPurge(path, settings.cachingProxies):
             purger.purgeAsync(url)
+
+    setSite(None)

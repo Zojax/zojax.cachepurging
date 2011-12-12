@@ -60,14 +60,25 @@ class TestHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 class TestHTTPServer(HTTPServer):
+
+    stopped = True
     
     def __init__(self, address, handler):
         HTTPServer.__init__(self, address, handler)
         self.response_queue = Queue.Queue()
-    
+        self.stopped = False
+
     def queue_response(self, **kw):
         self.response_queue.put(kw)
 
+    def serve_forever(self):
+        """Handle one request at a time until doomsday."""
+        while not self.stopped:
+            self.handle_request()
+        print 'stopped'
+    def shutdown(self):
+        self.stopped = True
+        
 # Finally the test suites.
 
 class TestCase(unittest.TestCase):
@@ -91,6 +102,7 @@ class TestCase(unittest.TestCase):
         finally:
             if self.httpd is not None:
                 self.httpd.shutdown()
+                import pdb; pdb.set_trace()
                 
                 if self.httpt.isAlive():
                     self.httpt.join(5)

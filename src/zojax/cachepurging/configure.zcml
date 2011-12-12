@@ -22,12 +22,6 @@
 
     <!-- Purge queue -->
     <utility component=".purger.DEFAULT_PURGER" />
-
-    <!-- Make sure we can annotate the request -->
-    <class class="ZPublisher.BaseRequest.BaseRequest">
-        <implements interface="zope.annotation.interfaces.IAttributeAnnotatable" />
-    </class>
-
     <!-- Views to explicitly purge the context -->
     <permission
         id="zojax.cachepurging.InitiatePurge"

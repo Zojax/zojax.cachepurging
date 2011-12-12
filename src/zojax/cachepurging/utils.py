@@ -7,10 +7,10 @@ from zojax.cache.interfaces import IPurgePaths
 from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 from zojax.cachepurging.interfaces import IPurgePathRewriter
 
-def isCachePurgingEnabled():
+def isCachePurgingEnabled(context=None):
     """Return True if caching is enabled
     """
-    settings = getUtility(ICachePurgingConfiglet)
+    settings = getUtility(ICachePurgingConfiglet, context=context)
     return (settings.enabled and bool(settings.cachingProxies))
 
 def getPathsToPurge(context, request):

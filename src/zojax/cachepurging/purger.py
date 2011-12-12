@@ -28,11 +28,27 @@ from zojax.cachepurging.interfaces import IPurger
 logger = logging.getLogger('zojax.cachepurging')
 
 
+WWW_TIMEOUT = 5
+
+def openWithTimeout(timeout = WWW_TIMEOUT):
+    def super_method(callable):
+        def method(self, *kv, **kw):
+            t = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(self.timeout or timeout)
+            try:
+                return callable(*kv, **kw)
+            finally:
+                socket.setdefaulttimeout(t)
+        return method
+    return super_method
+
+
 class Connection(httplib.HTTPConnection):
     """A connection that can handle either HTTP or HTTPS
     """
+    timeout = WWW_TIMEOUT
 
-    def __init__(self, host, port=None, strict=None, scheme="http", timeout=5):
+    def __init__(self, host, port=None, strict=None, scheme="http", timeout=WWW_TIMEOUT):
         self.scheme = scheme
         if scheme == "http":
             self.default_port = httplib.HTTP_PORT
@@ -40,10 +56,10 @@ class Connection(httplib.HTTPConnection):
             self.default_port = httplib.HTTPS_PORT
         else:
             raise ValueError("Invalid scheme '%s'" % scheme)
-        httplib.HTTPConnection.__init__(self, host, port, strict,
-            timeout=timeout)
         self.timeout = timeout
+        httplib.HTTPConnection.__init__(self, host, port, strict)
 
+    #@openWithTimeout
     def connect(self):
         if self.scheme == "http":
             httplib.HTTPConnection.connect(self)
@@ -199,7 +215,7 @@ class DefaultPurger(object):
         conn.putrequest(httpVerb, purge_path, skip_accept_encoding=True)
         conn.endheaders()
         resp = conn.getresponse()
-
+        logger.debug('got response from varnish: %s', resp)
         xcache = resp.getheader('x-cache', '')
         xerror = ''
         for header in self.errorHeaders:
