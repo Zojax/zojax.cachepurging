@@ -102,7 +102,6 @@ class TestCase(unittest.TestCase):
         finally:
             if self.httpd is not None:
                 self.httpd.shutdown()
-                import pdb; pdb.set_trace()
                 
                 if self.httpt.isAlive():
                     self.httpt.join(5)
