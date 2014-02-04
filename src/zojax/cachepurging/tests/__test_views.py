@@ -1,4 +1,7 @@
 import unittest
+from zojax.cachepurging.configlet import CachePurgingConfiglet
+from zope.component import getUtility, queryUtility
+from zope.component.interfaces import IRegistry, IComponentLookup
 import zope.component.testing
 
 from zope.interface import implements
@@ -17,6 +20,7 @@ from zojax.cachepurging.interfaces import ICachePurgingConfiglet
 from zojax.cachepurging.browser import QueuePurge, PurgeImmediately
 
 class FauxContext(object):
+    implements(IComponentLookup)
     pass
 
 class FauxRequest(dict):
@@ -35,11 +39,13 @@ class TestQueuePurge(unittest.TestCase):
     
     def setUp(self):
 
-        self.registry = Registry()
-        self.registry.registerInterface(ICachePurgingConfiglet)
-        provideUtility(self.registry, IRegistry)
-        
-        self.settings = self.registry.forInterface(ICachePurgingConfiglet)
+        #self.registry = queryUtility(IRegistry)
+        #self.registry = Registry()
+        #self.registry.registerInterface(ICachePurgingConfiglet)
+        #provideUtility(self.registry, IRegistry)
+
+        context = FauxContext()
+        self.settings = CachePurgingConfiglet()
         self.settings.enabled = True
         self.settings.cachingProxies = ('http://localhost:1234',)
         
@@ -69,11 +75,12 @@ class TestPurgeImmediately(unittest.TestCase):
     
     def setUp(self):
 
-        self.registry = Registry()
-        self.registry.registerInterface(ICachePurgingConfiglet)
-        provideUtility(self.registry, IRegistry)
+        #self.registry = Registry()
+        #self.registry.registerInterface(ICachePurgingConfiglet)
+        #provideUtility(self.registry, IRegistry)
         
-        self.settings = self.registry.forInterface(ICachePurgingConfiglet)
+
+        self.settings = CachePurgingConfiglet()
         self.settings.enabled = True
         self.settings.cachingProxies = ('http://localhost:1234',)
         

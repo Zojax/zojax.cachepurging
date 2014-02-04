@@ -16,10 +16,10 @@ from zojax.cachepurging.purger import DefaultPurger
 SERVER_PORT = 8765
 
 class TestHandler(BaseHTTPRequestHandler):
-    
+
     def log_message(self, format, *args):
         pass
-    
+
     def do_PURGE(self):
         # Get the pre-defined response from the server's queue.
         try:
@@ -30,24 +30,24 @@ class TestHandler(BaseHTTPRequestHandler):
             for h, v in self.headers.items():
                 print "%s: %s" % (h,v)
             raise RuntimeError, "Unexpected connection"
-            
+
         # We may have a function to call to check things.
         validator = nr.get('validator')
         if validator:
             validator(self)
-            
+
         # We may have to wake up some other code now the test connection
         # has been made, but before the response is sent.
         waiter = nr.get('waiter')
         if waiter:
             waiter.acquire()
             waiter.release()
-            
+
         # for now, response=None means simulate an unexpected error.
         if nr['response'] is None:
             self.rfile.close()
             return
-            
+
         # Send the response.
         self.send_response(nr['response'])
         headers = nr.get('headers', None)
@@ -62,7 +62,7 @@ class TestHandler(BaseHTTPRequestHandler):
 class TestHTTPServer(HTTPServer):
 
     stopped = True
-    
+
     def __init__(self, address, handler):
         HTTPServer.__init__(self, address, handler)
         self.response_queue = Queue.Queue()
@@ -78,11 +78,11 @@ class TestHTTPServer(HTTPServer):
         print 'stopped'
     def shutdown(self):
         self.stopped = True
-        
+
 # Finally the test suites.
 
 class TestCase(unittest.TestCase):
-    
+
     def setUp(self):
         self.purger = DefaultPurger()
         self.httpd, self.httpt = self.startServer()
@@ -102,16 +102,16 @@ class TestCase(unittest.TestCase):
         finally:
             if self.httpd is not None:
                 self.httpd.shutdown()
-                
+
                 if self.httpt.isAlive():
                     self.httpt.join(5)
-                
+
                 if self.httpt.isAlive():
                     self.fail("Thread failed to shut down")
-                
+
                 self.purger = None
                 self.httpd, self.httpt = None, None
-    
+
     def startServer(self, port=SERVER_PORT, start=True):
         """Start a TestHTTPServer in a separate thread, returning a tuple
         (server, thread). If start is true, the thread is started.
@@ -122,20 +122,20 @@ class TestCase(unittest.TestCase):
         if start:
             t.start()
         return httpd, t
-    
+
 class TestSync(TestCase):
-    
+
     def setUp(self):
         super(TestSync, self).setUp()
         self.purger.http_1_1 = True
-    
+
     def tearDown(self):
         super(TestSync, self).tearDown()
 
     def dispatchURL(self, path, method="PURGE", port=SERVER_PORT):
         url = "http://localhost:%s%s" % (port, path)
         return self.purger.purgeSync(url, method)
-    
+
     def testSimpleSync(self):
         self.httpd.queue_response(response=200)
         resp = self.dispatchURL("/foo")
@@ -157,17 +157,17 @@ class TestSync(TestCase):
         self.failUnlessEqual(status, 'ERROR')
 
 class TestSyncHTTP10(TestSync):
-    
+
     def setUp(self):
         super(TestSync, self).setUp()
         self.purger.http_1_1 = False
-    
+
 class TestAsync(TestCase):
-    
+
     def dispatchURL(self, path, method="PURGE", port=SERVER_PORT):
         url = "http://localhost:%s%s" % (port, path)
         self.purger.purgeAsync(url, method)
-        
+
         # Item should now be in the queue!
         q, w = self.purger.getQueueAndWorker(url)
         for i in range(10):
@@ -194,12 +194,12 @@ class TestAsync(TestCase):
         self.dispatchURL("/bar") # will consume error, then retry
 
 class TestAsyncConnectionFailure(TestCase):
-    
+
     def setUp(self):
         # Override setup to not start the server immediately
         self.purger = DefaultPurger()
         self.httpd, self.httpt = self.startServer(start=False)
-    
+
     def dispatchURL(self, path, method="PURGE", port=SERVER_PORT):
         url = "http://localhost:%s%s" % (port, path)
         self.purger.purgeAsync(url, method)
@@ -234,7 +234,7 @@ class TestAsyncConnectionFailure(TestCase):
                 break
             time.sleep(0.1)
         # else - our tearDown will complain about the queue
-    
+
 def test_suite():
     return unittest.defaultTestLoader.loadTestsFromName(__name__)
 

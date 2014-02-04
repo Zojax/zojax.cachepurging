@@ -1,23 +1,22 @@
 import unittest
 
 from zope.interface import implements
-from zope.traversing.interfaces import ITraversable
-
+from zope.traversing.interfaces import ITraversable, IPhysicallyLocatable
 from zojax.cachepurging.paths import TraversablePurgePaths
 
 class FauxTraversable(object):
-    implements(ITraversable)
+    implements(ITraversable, IPhysicallyLocatable)
 
-    def absolute_url_path(self):
+    def getPath(self):
         return '/foo'
 
 class TestTraversablePaths(unittest.TestCase):
-    
+
     def test_traversable_paths(self):
-        
+
         context = FauxTraversable()
         paths = TraversablePurgePaths(context)
-        
+
         self.assertEquals(['/foo'], paths.getRelativePaths())
         self.assertEquals([], paths.getAbsolutePaths())
         
